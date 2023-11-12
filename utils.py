@@ -107,6 +107,7 @@ def plot_compare_accuracy(model_configs, all_val_accuracies):
     plt.title('Validation Accuracy for Different Models')
     plt.legend()
     plt.grid(True)
+    plt.savefig('figure/value_accuracy_compare.jpg', dpi=1000)
     plt.show()
 
 def plot_compare_loss(model_configs, all_train_losses):
@@ -119,4 +120,5 @@ def plot_compare_loss(model_configs, all_train_losses):
     plt.title('Training Loss for Different Models')
     plt.legend()
     plt.grid(True)
+    plt.savefig('figure/train_loss_compare.jpg', dpi=1000)
     plt.show()

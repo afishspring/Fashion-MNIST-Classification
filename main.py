@@ -1,7 +1,8 @@
 import numpy as np
-import pandas as pd
 import argparse
 from tqdm import tqdm
+import pickle
+import os
 
 import torch
 import torch.optim as optim
@@ -17,9 +18,9 @@ parser.add_argument('--model', type=str, default='resnet50',
 parser.add_argument('--epochs', type=int, default=100,
                     help='Number of epochs to train.')
 # 学习率
-parser.add_argument('--lr', type=float, default=0.0001,
+parser.add_argument('--lr', type=float, default=0.001,
                     help='Initial learning rate.')
-# batch_size
+# batch_size 
 parser.add_argument('--batch_size', type=int, default=512,
                     help='batch_size')
 # 权重衰减
@@ -28,11 +29,9 @@ parser.add_argument('--weight_decay', type=float, default=5e-4,
 args = parser.parse_args()
 
 train_loader, val_loader, test_loader = load_data()
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def train(model_name):
-    model = get_model(model_name)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model.to(device)
+def train(model):
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(),
                         lr=args.lr, weight_decay=args.weight_decay)
@@ -79,7 +78,19 @@ def train(model_name):
     plot_loss(model_name, train_losses)
     plot_accuracy(model_name, val_accuracies)
 
-    # test
+    torch.save({'model': model.state_dict()}, 'pth/'+model_name+'.pth')
+    return train_losses, val_accuracies
+
+def test(model_name, using_exist=False):
+    model = get_model(model_name)
+    model.to(device)
+    if using_exist:
+        print("loading existed params")
+        state_dict = torch.load('pth/'+model_name+'.pth')
+        model.load_state_dict(state_dict['model'])
+    else:
+        train_losses, val_accuracies = train(model)
+
     all_labels = []
     all_predictions = []
     all_predictions_pro = []
@@ -108,17 +119,38 @@ def train(model_name):
 
     return train_losses, val_accuracies
 
-
 model_configs = [
+    'resnet18',
     'resnet34',
     'resnet50', 
-    'resnet101'
+    'resnet101',
+    'resnet152',
+    'without_resnet18',
+    'without_resnet34',
+    'without_resnet50', 
+    'without_resnet101',
+    'without_resnet152',
+    'cnn'
 ]
 all_train_losses = []
 all_val_accuracies = []
 for model_name in model_configs:
     print(f"Training {model_name}...")
-    train_losses, val_accuracies = train(model_name)
+    loss_acc_path = 'pkl/'+model_name+'.pkl'
+    if os.path.exists(loss_acc_path):
+        with open(loss_acc_path, 'rb') as f:
+            data_set = pickle.load(f)
+            train_losses = data_set['loss']
+            val_accuracies = data_set['acc']
+    else:
+        train_losses, val_accuracies = test(model_name)
+        data_set={
+            'loss':train_losses,
+            'acc':val_accuracies
+        }
+        with open(loss_acc_path, 'wb') as f:
+            pickle.dump(data_set, f)
+    
     all_train_losses.append(train_losses)
     all_val_accuracies.append(val_accuracies)
 

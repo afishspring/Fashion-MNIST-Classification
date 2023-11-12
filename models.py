@@ -6,7 +6,7 @@ import torch
 class BasicBlock(nn.Module):
     expansion = 1 #每一个conv的卷积核个数的倍数
 
-    def __init__(self, in_channel, out_channel, stride=1, downsample=None):#downsample对应虚线残差结构
+    def __init__(self, in_channel, out_channel, stride=1, downsample=None, using_resnet=True):#downsample对应虚线残差结构
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=in_channel, out_channels=out_channel,
                                kernel_size=3, stride=stride, padding=1, bias=False)
@@ -16,6 +16,7 @@ class BasicBlock(nn.Module):
                                kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channel)
         self.downsample = downsample
+        self.using_resnet = using_resnet
 
     def forward(self, x):
         identity = x #捷径上的输出值
@@ -29,7 +30,8 @@ class BasicBlock(nn.Module):
         out = self.conv2(out)
         out = self.bn2(out)
 
-        out += identity
+        if self.using_resnet:
+            out += identity
         out = self.relu(out)
 
         return out
@@ -38,7 +40,7 @@ class BasicBlock(nn.Module):
 class Bottleneck(nn.Module):
     expansion = 4#4倍
 
-    def __init__(self, in_channel, out_channel, stride=1, downsample=None):
+    def __init__(self, in_channel, out_channel, stride=1, downsample=None, using_resnet=True):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=in_channel, out_channels=out_channel,
                                kernel_size=1, stride=1, bias=False)  # squeeze channels
@@ -55,6 +57,7 @@ class Bottleneck(nn.Module):
         self.bn3 = nn.BatchNorm2d(out_channel*self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
+        self.using_resnet = using_resnet
 
     def forward(self, x):
         identity = x
@@ -72,7 +75,8 @@ class Bottleneck(nn.Module):
         out = self.conv3(out)
         out = self.bn3(out)
 
-        out += identity
+        if self.using_resnet:
+            out += identity
         out = self.relu(out)
 
         return out
@@ -80,7 +84,7 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, blocks_num, num_classes=1000, include_top=True):#block残差结构 include_top为了之后搭建更加复杂的网络
+    def __init__(self, block, blocks_num, num_classes=1000, include_top=True, using_resnet=True):#block残差结构 include_top为了之后搭建更加复杂的网络
         super(ResNet, self).__init__()
         self.include_top = include_top
         self.in_channel = 64
@@ -90,10 +94,10 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(self.in_channel)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, blocks_num[0])
-        self.layer2 = self._make_layer(block, 128, blocks_num[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, blocks_num[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, blocks_num[3], stride=2)
+        self.layer1 = self._make_layer(block, 64, blocks_num[0], using_resnet=using_resnet)
+        self.layer2 = self._make_layer(block, 128, blocks_num[1], stride=2, using_resnet=using_resnet)
+        self.layer3 = self._make_layer(block, 256, blocks_num[2], stride=2, using_resnet=using_resnet)
+        self.layer4 = self._make_layer(block, 512, blocks_num[3], stride=2, using_resnet=using_resnet)
         if self.include_top:
             self.avgpool = nn.AdaptiveAvgPool2d((1, 1))  # output size = (1, 1)自适应
             self.fc = nn.Linear(512 * block.expansion, num_classes)
@@ -102,7 +106,7 @@ class ResNet(nn.Module):
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
 
-    def _make_layer(self, block, channel, block_num, stride=1):
+    def _make_layer(self, block, channel, block_num, stride=1, using_resnet=True):
         downsample = None
         if stride != 1 or self.in_channel != channel * block.expansion:
             downsample = nn.Sequential(
@@ -110,11 +114,11 @@ class ResNet(nn.Module):
                 nn.BatchNorm2d(channel * block.expansion))
 
         layers = []
-        layers.append(block(self.in_channel, channel, downsample=downsample, stride=stride))
+        layers.append(block(self.in_channel, channel, downsample=downsample, stride=stride, using_resnet=using_resnet))
         self.in_channel = channel * block.expansion
 
         for _ in range(1, block_num):
-            layers.append(block(self.in_channel, channel))
+            layers.append(block(self.in_channel, channel, using_resnet=using_resnet))
 
         return nn.Sequential(*layers)
 
@@ -154,23 +158,18 @@ class cnn_classify(nn.Module):
         x = self.flatten(x)
         x = F.relu(self.fc1(x))
         x = F.sigmoid(self.fc2(x))
-        return x
-
-def resnet34(num_classes=10, include_top=True):
-    return ResNet(BasicBlock, [3, 4, 6, 3], num_classes=num_classes, include_top=include_top)
-
-def resnet50(num_classes=10, include_top=True):
-    return ResNet(Bottleneck, [3, 4, 6, 3], num_classes=num_classes, include_top=include_top)
-
-def resnet101(num_classes=10, include_top=True):
-    return ResNet(Bottleneck, [3, 4, 23, 3], num_classes=num_classes, include_top=include_top)
+        return x 
 
 def get_model(model_type):
-    if model_type == 'resnet34':
-        return resnet34()
-    elif model_type == 'resnet50':
-        return resnet50()
-    elif model_type == 'resnet101':
-        return resnet101()
-    elif model_type == 'cnn':
+    if 'resnet18' in model_type:
+        return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+    elif 'resnet34' in model_type:
+        return ResNet(BasicBlock, [3, 4, 6, 3], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+    elif 'resnet50' in model_type:
+        return ResNet(Bottleneck, [3, 4, 6, 3], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+    elif 'resnet101' in model_type:
+        return ResNet(Bottleneck, [3, 4, 23, 3], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+    elif 'resnet152' in model_type:
+        return ResNet(Bottleneck, [3, 8, 36, 3], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+    elif 'cnn' in model_type:
         return cnn_classify()
