@@ -112,7 +112,6 @@ def plot_compare_accuracy(model_configs, all_val_accuracies):
 
     plt.xlabel('Epochs')
     plt.ylabel('Validation Accuracy')
-    # plt.title('Validation Accuracy for Different Kernel Size')
     plt.legend(loc='center right')
     plt.grid(True)
     plt.savefig('figure/value_accuracy_compare.jpg', dpi=1000)
@@ -129,7 +128,6 @@ def plot_compare_loss(model_configs, all_train_losses):
 
     plt.xlabel('Epochs')
     plt.ylabel('Training Loss')
-    # plt.title('Training Loss for Different Kernel Size')
     plt.legend(loc='center right')
     plt.grid(True)
     plt.savefig('figure/train_loss_compare.jpg', dpi=1000)
@@ -142,18 +140,28 @@ def plot_compare_accuracy_and_loss(model_configs, all_val_accuracies, all_train_
 
     for i, model_name in enumerate(model_configs):
         color = palette[i]
-        line_style = '--' if "without" in model_name else '-'
+        line_style = '--'
         
         # 绘制Validation Accuracy
-        plt.plot(all_val_accuracies[i], label=model_name+'_Accuracy', color=color, linestyle=line_style)
-
+        label_accuracy = model_name + '_accuracy'
+        plt.plot(all_val_accuracies[i], label=label_accuracy, color=color, linestyle=line_style)
+    lines1, labels1 = plt.gca().get_legend_handles_labels()
+    # 创建第二个纵坐标标度
+    ax2 = plt.gca().twinx()
+    for i, model_name in enumerate(model_configs):
+        color = palette[i]
+        line_style = '-'
+        
         # 绘制Training Loss
-        plt.plot(all_train_losses[i], label=model_name+'_Loss', color=color, linestyle=line_style)
+        label_loss = model_name + '_loss'
+        ax2.plot(all_train_losses[i], label=label_loss, color=color, linestyle=line_style)
 
     plt.xlabel('Epochs')
-    plt.ylabel('Accuracy / Loss')
-    # plt.title('Accuracy and Loss Comparison')
-    plt.legend(loc='center right')
+    plt.ylabel('Accuracy')
+    ax2.set_ylabel('Loss')
+    
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    plt.legend(lines1 + lines2, labels1 + labels2, loc='center right')
     plt.grid(True)
-    plt.savefig('figure/accuracy_and_loss_compare_kernel.jpg', dpi=1000)
+    plt.savefig('figure/accuracy_and_loss_compare.jpg', dpi=500)
     plt.show()

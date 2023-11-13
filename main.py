@@ -119,32 +119,18 @@ def test(model_name, using_exist=False):
 
     return train_losses, val_accuracies
 
-# model_configs = [
-#     # 'resnet18_small',
-#     'resnet18',
-#     'resnet34',
-#     'resnet50', 
-#     'resnet101',
-#     'resnet152',
-#     'without_resnet18',
-#     'without_resnet34',
-#     'without_resnet50', 
-#     'without_resnet101',
-#     'without_resnet152',
-#     # 'cnn'
-# ]
 model_configs = [
-    'resnet18_small',
+    # 'resnet18_small',
     'resnet18',
-    # 'resnet34',
-    # 'resnet50', 
-    # 'resnet101',
-    # 'resnet152',
-    # 'without_resnet18',
-    # 'without_resnet34',
-    # 'without_resnet50', 
-    # 'without_resnet101',
-    # 'without_resnet152'
+    'resnet34',
+    'resnet50', 
+    'resnet101',
+    'resnet152',
+    'without_resnet18',
+    'without_resnet34',
+    'without_resnet50', 
+    'without_resnet101',
+    'without_resnet152'
     # 'cnn'
 ]
 all_train_losses = []
@@ -171,4 +157,4 @@ for model_name in model_configs:
 
 plot_compare_accuracy(model_configs, all_val_accuracies)
 plot_compare_loss(model_configs, all_train_losses)
-plot_compare_accuracy_and_loss(model_configs, all_val_accuracies, all_train_losses)
+# plot_compare_accuracy_and_loss(model_configs, all_val_accuracies, all_train_losses)
