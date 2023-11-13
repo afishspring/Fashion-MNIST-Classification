@@ -98,11 +98,12 @@ class ResNet(nn.Module):
             )
         else:
             self.layer0 = nn.Sequential(
-                nn.Conv2d(1, int(self.in_channel/4), kernel_size=3, stride=2, padding=3, bias=False),
-                nn.Conv2d(int(self.in_channel/4), int(self.in_channel/2), kernel_size=3, stride=2, padding=3, bias=False),
-                nn.Conv2d(int(self.in_channel/2), self.in_channel, kernel_size=3, stride=2, padding=3, bias=False),
+                nn.Conv2d(1, int(self.in_channel), kernel_size=3, stride=2, padding=1, bias=False),
+                nn.Conv2d(int(self.in_channel), int(self.in_channel), kernel_size=3, stride=1, padding=1, bias=False),
+                nn.Conv2d(int(self.in_channel), self.in_channel, kernel_size=3, stride=1, padding=1, bias=False),
                 nn.BatchNorm2d(self.in_channel),
-                nn.ReLU(inplace=True)
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
             )
 
 
