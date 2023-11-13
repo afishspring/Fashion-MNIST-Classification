@@ -134,17 +134,17 @@ def test(model_name, using_exist=False):
 #     # 'cnn'
 # ]
 model_configs = [
-    'resnet18_small',
-    'resnet18'
-    # 'resnet34',
-    # 'resnet50', 
-    # 'resnet101',
-    # 'resnet152',
-    # 'without_resnet18',
-    # 'without_resnet34',
-    # 'without_resnet50', 
-    # 'without_resnet101',
-    # 'without_resnet152',
+    # 'resnet18_small',
+    'resnet18',
+    'resnet34',
+    'resnet50', 
+    'resnet101',
+    'resnet152',
+    'without_resnet18',
+    'without_resnet34',
+    'without_resnet50', 
+    'without_resnet101',
+    'without_resnet152'
     # 'cnn'
 ]
 all_train_losses = []
