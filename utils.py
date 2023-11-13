@@ -115,7 +115,7 @@ def plot_compare_accuracy(model_configs, all_val_accuracies):
     # plt.title('Validation Accuracy for Different Kernel Size')
     plt.legend(loc='center right')
     plt.grid(True)
-    plt.savefig('figure/value_accuracy_compare_18.jpg', dpi=1000)
+    plt.savefig('figure/value_accuracy_compare_kernel.jpg', dpi=1000)
     plt.show()
 
 def plot_compare_loss(model_configs, all_train_losses):
@@ -132,5 +132,5 @@ def plot_compare_loss(model_configs, all_train_losses):
     # plt.title('Training Loss for Different Kernel Size')
     plt.legend(loc='center right')
     plt.grid(True)
-    plt.savefig('figure/train_loss_compare_18.jpg', dpi=1000)
+    plt.savefig('figure/train_loss_compare_kernel.jpg', dpi=1000)
     plt.show()
