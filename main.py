@@ -29,7 +29,7 @@ parser.add_argument('--weight_decay', type=float, default=5e-4,
 args = parser.parse_args()
 
 train_loader, val_loader, test_loader = load_data()
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
 
 def train(model):
     criterion = torch.nn.CrossEntropyLoss()
@@ -119,18 +119,33 @@ def test(model_name, using_exist=False):
 
     return train_losses, val_accuracies
 
+# model_configs = [
+#     # 'resnet18_small',
+#     'resnet18',
+#     'resnet34',
+#     'resnet50', 
+#     'resnet101',
+#     'resnet152',
+#     'without_resnet18',
+#     'without_resnet34',
+#     'without_resnet50', 
+#     'without_resnet101',
+#     'without_resnet152',
+#     # 'cnn'
+# ]
 model_configs = [
-    'resnet18',
-    'resnet34',
-    'resnet50', 
-    'resnet101',
-    'resnet152',
-    'without_resnet18',
-    'without_resnet34',
-    'without_resnet50', 
-    'without_resnet101',
-    'without_resnet152',
-    'cnn'
+    'resnet18_small',
+    'resnet18'
+    # 'resnet34',
+    # 'resnet50', 
+    # 'resnet101',
+    # 'resnet152',
+    # 'without_resnet18',
+    # 'without_resnet34',
+    # 'without_resnet50', 
+    # 'without_resnet101',
+    # 'without_resnet152',
+    # 'cnn'
 ]
 all_train_losses = []
 all_val_accuracies = []

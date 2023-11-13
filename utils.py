@@ -45,7 +45,7 @@ def tensor_data(X_data, y_data):
 
 def plot_confusion_matrix(model, cm):
     plt.figure(figsize=(8, 8))
-    sns.set()
+    sns.set(style="darkgrid")
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
     plt.title('Confusion Matrix')
     plt.xlabel('Predicted')
@@ -60,6 +60,7 @@ def plot_auroc(model, all_labels, all_predictions_pro):
     predicted_probabilities = np.array(all_predictions_pro)
 
     plt.figure(figsize=(10, 8))
+    sns.set(style="darkgrid")
     for class_idx in range(predicted_probabilities.shape[1]):
         class_true_labels = true_labels == class_idx
         class_predicted_probs = predicted_probabilities[:, class_idx]
@@ -78,6 +79,7 @@ def plot_auroc(model, all_labels, all_predictions_pro):
 
 def plot_accuracy(model, accuracy):
     plt.figure()
+    sns.set(style="darkgrid")
     plt.plot(accuracy, label='Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
@@ -89,6 +91,7 @@ def plot_accuracy(model, accuracy):
 
 def plot_loss(model, losses):
     plt.figure()
+    sns.set(style="darkgrid")
     plt.plot(losses, label='Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
@@ -99,26 +102,35 @@ def plot_loss(model, losses):
 
 def plot_compare_accuracy(model_configs, all_val_accuracies):
     plt.figure(figsize=(12, 6))
-    for i, model_name in enumerate([config for config in model_configs]):
-        plt.plot(all_val_accuracies[i], label=model_name+'_Accuracy')
+    sns.set(style="darkgrid")
+    palette = sns.color_palette("husl", n_colors=len(model_configs))
+
+    for i, model_name in enumerate(model_configs):
+        color = palette[i]
+        line_style = '--' if "without" in model_name else '-'
+        plt.plot(all_val_accuracies[i], label=model_name+'_Accuracy', color=color, linestyle=line_style)
 
     plt.xlabel('Epochs')
     plt.ylabel('Validation Accuracy')
-    plt.title('Validation Accuracy for Different Models')
-    plt.legend()
+    plt.title('Validation Accuracy for Different Kernel Size')
+    plt.legend(loc='center right')
     plt.grid(True)
-    plt.savefig('figure/value_accuracy_compare.jpg', dpi=1000)
+    plt.savefig('figure/value_accuracy_compare_kernel.jpg', dpi=1000)
     plt.show()
 
 def plot_compare_loss(model_configs, all_train_losses):
     plt.figure(figsize=(12, 6))
-    for i, model_name in enumerate([config for config in model_configs]):
-        plt.plot(all_train_losses[i], label=model_name+'_Loss')
+    sns.set(style="darkgrid")
+    palette = sns.color_palette("husl", n_colors=len(model_configs))
+    for i, model_name in enumerate(model_configs):
+        color = palette[i]
+        line_style = '--' if "without" in model_name else '-'
+        plt.plot(all_train_losses[i], label=model_name+'_Loss', color=color, linestyle=line_style)
 
     plt.xlabel('Epochs')
     plt.ylabel('Training Loss')
-    plt.title('Training Loss for Different Models')
-    plt.legend()
+    plt.title('Training Loss for Different Kernel Size')
+    plt.legend(loc='center right')
     plt.grid(True)
-    plt.savefig('figure/train_loss_compare.jpg', dpi=1000)
+    plt.savefig('figure/train_loss_compare_kernel.jpg', dpi=1000)
     plt.show()

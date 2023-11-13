@@ -84,16 +84,28 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, blocks_num, num_classes=1000, include_top=True, using_resnet=True):#block残差结构 include_top为了之后搭建更加复杂的网络
+    def __init__(self, block, blocks_num, num_classes=1000, include_top=True, using_resnet=True, big_kernel=True):#block残差结构 include_top为了之后搭建更加复杂的网络
         super(ResNet, self).__init__()
         self.include_top = include_top
         self.in_channel = 64
 
-        self.conv1 = nn.Conv2d(1, self.in_channel, kernel_size=7, stride=2,
-                               padding=3, bias=False)
-        self.bn1 = nn.BatchNorm2d(self.in_channel)
-        self.relu = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        if big_kernel:
+            self.layer0 = nn.Sequential(
+                nn.Conv2d(1, self.in_channel, kernel_size=7, stride=2, padding=3, bias=False),
+                nn.BatchNorm2d(self.in_channel),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+            )
+        else:
+            self.layer0 = nn.Sequential(
+                nn.Conv2d(1, int(self.in_channel/4), kernel_size=3, stride=2, padding=3, bias=False),
+                nn.Conv2d(int(self.in_channel/4), int(self.in_channel/2), kernel_size=3, stride=2, padding=3, bias=False),
+                nn.Conv2d(int(self.in_channel/2), self.in_channel, kernel_size=3, stride=2, padding=3, bias=False),
+                nn.BatchNorm2d(self.in_channel),
+                nn.ReLU(inplace=True)
+            )
+
+
         self.layer1 = self._make_layer(block, 64, blocks_num[0], using_resnet=using_resnet)
         self.layer2 = self._make_layer(block, 128, blocks_num[1], stride=2, using_resnet=using_resnet)
         self.layer3 = self._make_layer(block, 256, blocks_num[2], stride=2, using_resnet=using_resnet)
@@ -123,11 +135,7 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-
+        x = self.layer0(x)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
@@ -162,14 +170,19 @@ class cnn_classify(nn.Module):
 
 def get_model(model_type):
     if 'resnet18' in model_type:
-        return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+        return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=10, include_top=True, 
+                      using_resnet=('without' not in model_type), big_kernel=('small' not in model_type))
     elif 'resnet34' in model_type:
-        return ResNet(BasicBlock, [3, 4, 6, 3], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+        return ResNet(BasicBlock, [3, 4, 6, 3], num_classes=10, include_top=True, 
+                      using_resnet=('without' not in model_type))
     elif 'resnet50' in model_type:
-        return ResNet(Bottleneck, [3, 4, 6, 3], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+        return ResNet(Bottleneck, [3, 4, 6, 3], num_classes=10, include_top=True, 
+                      using_resnet=('without' not in model_type))
     elif 'resnet101' in model_type:
-        return ResNet(Bottleneck, [3, 4, 23, 3], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+        return ResNet(Bottleneck, [3, 4, 23, 3], num_classes=10, include_top=True, 
+                      using_resnet=('without' not in model_type))
     elif 'resnet152' in model_type:
-        return ResNet(Bottleneck, [3, 8, 36, 3], num_classes=10, include_top=True, using_resnet=('without' not in model_type))
+        return ResNet(Bottleneck, [3, 8, 36, 3], num_classes=10, include_top=True, 
+                      using_resnet=('without' not in model_type))
     elif 'cnn' in model_type:
         return cnn_classify()
