@@ -134,3 +134,26 @@ def plot_compare_loss(model_configs, all_train_losses):
     plt.grid(True)
     plt.savefig('figure/train_loss_compare.jpg', dpi=1000)
     plt.show()
+
+def plot_compare_accuracy_and_loss(model_configs, all_val_accuracies, all_train_losses):
+    plt.figure(figsize=(12, 6))
+    sns.set(style="darkgrid")
+    palette = sns.color_palette("husl", n_colors=len(model_configs))
+
+    for i, model_name in enumerate(model_configs):
+        color = palette[i]
+        line_style = '--' if "without" in model_name else '-'
+        
+        # 绘制Validation Accuracy
+        plt.plot(all_val_accuracies[i], label=model_name+'_Accuracy', color=color, linestyle=line_style)
+
+        # 绘制Training Loss
+        plt.plot(all_train_losses[i], label=model_name+'_Loss', color=color, linestyle=line_style)
+
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy / Loss')
+    # plt.title('Accuracy and Loss Comparison')
+    plt.legend(loc='center right')
+    plt.grid(True)
+    plt.savefig('figure/accuracy_and_loss_compare_kernel.jpg', dpi=1000)
+    plt.show()
